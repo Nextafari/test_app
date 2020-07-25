@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from .serializer import UserProfileSerializers, EditSerializer
 from django.conf import settings
 from django.core.mail import send_mail
-
+#from django.template.loader import render_to_string
+from django.utils.html import strip_tags
 
 
 # @swagger_auto_schema(
@@ -47,7 +48,8 @@ def get_user_profile(request, pk):
             content = serializer.validated_data.get("content")
             recipient = serializer.validated_data.get("recipient")
             sender = settings.EMAIL_HOST_USER
-            send_mail(subject, content, sender, [recipient])
+            striped_tags = strip_tags(content)
+            send_mail(subject, striped_tags, sender, [recipient])
             serializer.save()
             return Response('Newsletter sent')
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
