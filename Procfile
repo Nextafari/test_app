@@ -1,1 +1,1 @@
-web: gunicorn --chdir source my_login_page.wsgi
+web: gunicorn --chdir source newsletter_test.wsgi
