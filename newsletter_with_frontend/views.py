@@ -47,6 +47,8 @@ def get_user_profile(request, pk):
         if serializer.is_valid():
             subject = serializer.validated_data.get("subject")
             content = serializer.validated_data.get("content")
+            content = "{% load static %}" + content
+            content = content.replace("/static/", "http://f9d5e4eba28a.ngrok.io/static/")
             recipient = serializer.validated_data.get("recipient")
             sender = settings.EMAIL_HOST_USER
             # striped_tags = strip_tags(content)
