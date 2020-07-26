@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from .models import UserProfile
 from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework import status
 # from drf_yasg.utils import swagger_auto_schema
 from rest_framework.response import Response
-from .serializer import UserProfileSerializers, EditSerializer
+from .serializer import UserProfileSerializers, EditSerializer, TemplateEmailSerializer
 from django.conf import settings
-from django.core.mail import send_mail
-#from django.template.loader import render_to_string
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import get_template
 from django.utils.html import strip_tags
 
 
@@ -48,11 +49,23 @@ def get_user_profile(request, pk):
             content = serializer.validated_data.get("content")
             recipient = serializer.validated_data.get("recipient")
             sender = settings.EMAIL_HOST_USER
-            striped_tags = strip_tags(content)
-            send_mail(subject, striped_tags, sender, [recipient])
+            # striped_tags = strip_tags(content)
+            # send_mail(subject, striped_tags, sender, [recipient])
+            with open(settings.BASE_DIR + '/newsletter_with_frontend/templates/newsletter_with_frontend/mail.html', 'w') as f:
+                newsletter_mail = f.write(content)
+            with open(settings.BASE_DIR + '/newsletter_with_frontend/templates/newsletter_with_frontend/mail.html') as f:
+                newsletter_mail = f.read()
+                newsletter_name = f.name
+                newsletter_txt = strip_tags(newsletter_mail)
+
+            html_template = get_template('newsletter_with_frontend/mail.html').render()
+            message = EmailMultiAlternatives(subject, newsletter_txt, sender, [recipient])
+            message.attach_alternative(html_template, 'text/html')
+            message.send()
+
             serializer.save()
             return Response('Newsletter sent')
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     elif request.method == 'DELETE':
         user.delete()
@@ -67,3 +80,26 @@ def editor(request, pk):
 
 def snippets(request):
     return render(request, 'newsletter_with_frontend/snippets.html')
+
+
+class TemplateEmail(APIView):
+    def post(self, request):
+        serializer = TemplateEmailSerializer(data=request.data)
+        if serializer.is_valid():
+            subject = serializer.validated_data.get('subject')
+            recipient = serializer.validated_data.get('recipient')
+            sender = settings.EMAIL_HOST_USER
+            with open(
+                settings.BASE_DIR + '/newsletter_with_frontend/templates/newsletter_with_frontend/newsletter.txt'
+            ) as f:
+                newsletter_txt = f.read()
+            message = EmailMultiAlternatives(subject, newsletter_txt, sender, [recipient])
+            html_template = get_template('mail.html').render()
+            message.attach_alternative(html_template, 'text/html')
+            message.send()
+            return Response("Newsletter Sent")
+        else:
+            return Response({
+                'status': 'failure',
+                'data': { 'message': 'Incorrect request format.', 'errors': serializer.errors}
+            }, status=status.HTTP_403_FORBIDDEN)
