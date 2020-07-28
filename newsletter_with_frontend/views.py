@@ -107,3 +107,4 @@ class TemplateEmail(APIView):
                 'status': 'failure',
                 'data': { 'message': 'Incorrect request format.', 'errors': serializer.errors}
             }, status=status.HTTP_403_FORBIDDEN)
+
