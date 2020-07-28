@@ -6,4 +6,5 @@ urlpatterns = [
     path('profiles/', views.profile_list, name="profiles"),
     path('editor/<int:pk>/', views.editor, name="Editor"),
     path('snippets/', views.snippets),
+    path('template/', views.TemplateEmail.as_view(), name="TemplateEmail")
 ]

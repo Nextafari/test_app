@@ -24,3 +24,12 @@ class EditSerializer(serializers.ModelSerializer):
             'recipient'
         ]
 
+
+
+class TemplateEmailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserProfile
+        fields = [
+            'subject',
+            'recipient'
+        ]
