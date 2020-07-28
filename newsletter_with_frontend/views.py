@@ -47,8 +47,10 @@ def get_user_profile(request, pk):
         if serializer.is_valid():
             subject = serializer.validated_data.get("subject")
             content = serializer.validated_data.get("content")
+            # concatenating the email template and the user's content
             content = "{% load static %}" + content
-            content = content.replace("/static/", "http://f9d5e4eba28a.ngrok.io/static/")
+            # Replacing a path for serving the static files(images) precisely
+            content = content.replace("/static/", "https://newsletter-test-app.herokuapp.com/static/")
             recipient = serializer.validated_data.get("recipient")
             sender = settings.EMAIL_HOST_USER
             # striped_tags = strip_tags(content)
@@ -93,7 +95,7 @@ class TemplateEmail(APIView):
             sender = settings.EMAIL_HOST_USER
             with open(
                 settings.BASE_DIR + '/newsletter_with_frontend/templates/newsletter_with_frontend/newsletter.txt'
-            ) as f:
+                ) as f:
                 newsletter_txt = f.read()
             message = EmailMultiAlternatives(subject, newsletter_txt, sender, [recipient])
             html_template = get_template('mail.html').render()
